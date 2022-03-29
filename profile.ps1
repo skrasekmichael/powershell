@@ -1,5 +1,6 @@
 if ((Get-Host).Version.Major -gt 5) {
 	Import-Module -Name Terminal-Icons
+	Import-Module posh-git
 
 	if ($host.Name -eq "ConsoleHost") {
 		Import-Module PSReadLine
@@ -16,6 +17,7 @@ Set-Alias -Name zip -Value Compress-Archive
 Set-Alias -Name unzip -Value Expand-Archive
 Set-Alias -Name new -Value New-Terminal
 Set-Alias -Name refresh -Value Invoke-RefreshEnviromentVariables
+Set-Alias -Name mklink -Value New-Symlink
 
 Set-PSReadLineKeyHandler -Key Alt+e `
 	-BriefDescription CWD `
@@ -28,7 +30,7 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 	$Local:word = $wordToComplete.Replace('"', '""')
 	$Local:ast = $commandAst.ToString().Replace('"', '""')
 	winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
-		[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+		[System.Management.Automation.CompletionResult]::new($_, $_, "ParameterValue", $_)
 	}
 }
 
@@ -40,18 +42,13 @@ Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
 }
 
 function Write-BranchName {
-	git status | Out-Null
-	if ($LASTEXITCODE -eq "0") {
-		try {
-			$branch = git rev-parse --abbrev-ref HEAD
-			if ($branch -eq "HEAD") {
-				$branch = git rev-parse --short HEAD
-				Write-Host "($branch) " -NoNewline -ForegroundColor Red
-			} else {
-				Write-Host "($branch) " -NoNewline -ForegroundColor Blue
-			}
-		} catch {
-			Write-Host "(no branches yet) " -NoNewline -ForegroundColor Yellow
+	$branch = git rev-parse --abbrev-ref HEAD
+	if ($LASTEXITCODE -eq 0) {
+		if ($branch -eq "HEAD") {
+			$branch = git rev-parse --short HEAD
+			Write-Host "($branch) " -NoNewline -ForegroundColor Red
+		} else {
+			Write-Host "($branch) " -NoNewline -ForegroundColor Blue
 		}
 	}
 }
@@ -59,9 +56,17 @@ function Write-BranchName {
 function New-Terminal($arg) {
 	if (($arg -eq "split") -or ($arg -eq "s")) {
 		wt sp -d "$pwd"
-	} elseif (($arg -eq "tab") -or ($arg -eq "t")) {
+	} elseif (($arg -eq "tab") -or ($arg -eq "t") -or ($null -eq $arg)) {
 		wt nt -d "$pwd"
 	}
+}
+
+function New-Symlink {
+	param(
+		[string]$TargetPath,
+		[string]$LinkPath
+	)
+	New-Item -Path $LinkPath -ItemType SymbolicLink -Value $TargetPath
 }
 
 function Invoke-RefreshEnviromentPath {

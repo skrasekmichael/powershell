@@ -1,4 +1,12 @@
+param(
+	[string]$Path,
+	[int]$Depth
+)
+
 $root = "."
+if ("" -ne $Path) {
+	$root = $Path;
+}
 
 function Format-Size {
 	param (
@@ -20,12 +28,15 @@ function Format-Size {
 
 function Write-Info {
 	param (
-		[string]$Path
+		[string]$Path,
+		[int]$CurrentDepth
 	)
 
-	$folders = Get-ChildItem $Path -Directory
-	foreach ($folder in $folders) {
-		Write-Info -Path ($Path + "/" + $folder.Name)
+	if ($CurrentDepth -le $Depth) {
+		$folders = Get-ChildItem $Path -Directory
+		foreach ($folder in $folders) {
+			Write-Info -Path ($Path + "/" + $folder.Name) -CurrentDepth ($CurrentDepth + 1)
+		}
 	}
 	
 	$files = Get-ChildItem -Path $Path/* -File -Include *.avi, *.mp4, *.mkv
@@ -82,4 +93,4 @@ function Get-Counts {
 	}
 }
 
-Write-Info -Path $root | Format-Table File, @{Expression={$_.Size}; Label="Size      "}, Resolution, Codec, Duration, Auds, Subs, Details
+Write-Info -Path $root -CurrentDepth 0 | Format-Table File, @{Expression={$_.Size}; Label="Size      "}, Resolution, Codec, Duration, Auds, Subs, Details
