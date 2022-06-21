@@ -1,5 +1,5 @@
 if ((Get-Host).Version.Major -gt 5) {
-	Import-Module -Name Terminal-Icons
+	Import-Module Terminal-Icons
 	Import-Module posh-git
 
 	if ($host.Name -eq "ConsoleHost") {
@@ -42,13 +42,17 @@ Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
 }
 
 function Write-BranchName {
-	$branch = git rev-parse --abbrev-ref HEAD
+	param(
+		[System.Text.StringBuilder]$StringBuilder
+	)
+
+	$branch = git rev-parse --abbrev-ref HEAD 2>$null
 	if ($LASTEXITCODE -eq 0) {
 		if ($branch -eq "HEAD") {
 			$branch = git rev-parse --short HEAD
-			Write-Host "($branch) " -NoNewline -ForegroundColor Red
+			$StringBuilder.Append("`e[91m($branch) ")
 		} else {
-			Write-Host "($branch) " -NoNewline -ForegroundColor Blue
+			$StringBuilder.Append("`e[94m($branch) ")
 		}
 	}
 }
@@ -87,28 +91,36 @@ function Invoke-RefreshEnviromentVariables {
 	Invoke-RefreshEnviromentPath
 }
 
+function Get-LastError {
+	$Error[0].Exception | Format-List * -Force
+}
+
 function prompt {
+	$sb = [System.Text.StringBuilder]::new(300)
+
 	#username@address
 	$address = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Wi-Fi).IPAddress
-	Write-Host "$env:USERNAME@$address" -NoNewline -ForegroundColor Green
-	
+	$sb.Append("`e[92m$env:USERNAME@$address")
+
 	#directory
-	Write-Host " $PWD " -NoNewline
+	$sb.Append("`e[39m $PWD ")
 
 	#git branch
-	Write-BranchName
+	Write-BranchName -StringBuilder $sb
 	
 	#powershell version
-	$ver = (Get-Host).Version
-	Write-Host "$($ver.Major).$($ver.Minor)" -NoNewline -ForegroundColor Cyan
+	$ver = $PSVersionTable.PSVersion
+	$sb.Append("`e[96m$($ver.Major).$($ver.Minor)")
 
 	#admin rights
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 	if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-		return "`e[91m#`e[39m"
+		$sb.Append("`e[91m#`e[39m")
 	} else {
-		return ">"
+		$sb.Append("`e[39m>")
 	}
+
+	return $sb.ToString()
 }
 
 Invoke-RefreshEnviromentPath

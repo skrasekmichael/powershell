@@ -11,7 +11,10 @@ param(
 	[string[]]$Titles = $null,
 	[string]$FontName = "Calibri",
 	[int[]]$FontSizes = @(15, 15, 15),
-	[System.Drawing.Color[]]$FontColors = @([System.Drawing.Color]::Black, [System.Drawing.Color]::Black, [System.Drawing.Color]::Black)
+	[int]$Left = 0,
+	[int]$Top = 0,
+	[System.Drawing.Color[]]$FontColors = @([System.Drawing.Color]::Black, [System.Drawing.Color]::Black, [System.Drawing.Color]::Black),
+	[int]$Aligment = 4
 )
 
 $filePaths = [System.Collections.ArrayList]::new()
@@ -35,31 +38,18 @@ $rows = [Math]::Ceiling($filePaths.Count / $Cols)
 
 $img = [System.Drawing.Image]::FromFile($filePaths[0])
 $h = (($img.Height * $Width) / $img.Width + $Space) * $rows + $space
+$Height = ($img.Height * $Width) / $img.Width;
 $img.Dispose()
 
-$left = 0;
-if ($null -ne $RowTitles) {
-	$left = $FontSizes[1]
-}
-
-$top = 0;
-if ($null -ne $ColTitles) {
-	$top = $FontSizes[0]
-}
-
-$bmp = New-Object System.Drawing.Bitmap(($w + $left), ($h + $top))
+$bmp = New-Object System.Drawing.Bitmap([int]($w + $Left), [int]($h + $Top))
 $graphics = [System.Drawing.Graphics]::FromImage($bmp)
 
 $graphics.Clear([System.Drawing.Color]::White);
 
-if ($null -ne $ColTitles) {
-	$colFont = [System.Drawing.Font]::new($FontName, $FontSizes[0], [System.Drawing.FontStyle]::Regular)
-	$colBrush = [System.Drawing.SolidBrush]::new($FontColors[0])
-
-	for ($x = 0; $x -lt $Cols; $x++) {
-		$graphics.DrawString($ColTitles[$x], $colFont, $colBrush, $left + $Space + $x * ($Width + $Space), 0)
-	}
-}
+$stringFormat = [System.Drawing.StringFormat]::new()
+$stringFormat.Alignment = $Aligment % 3
+$stringFormat.LineAlignment = ($Aligment - $Aligment % 3) / 3
+$stringFormat.FormatFlags = [System.Drawing.StringFormatFlags]::NoWrap + [System.Drawing.StringFormatFlags]::NoClip
 
 $index = 0;
 while ($index -lt $filePaths.Count) {
@@ -76,10 +66,30 @@ while ($index -lt $filePaths.Count) {
 		$x = $index % $Cols
 		$y = ($index - $x) / $Cols
 
-		$graphics.DrawImage($img, $left + $Space + $x * ($Width + $Space), $top + $Space + $y * ($Height + $Space), $Width, $Height)
+		$graphics.DrawImage($img, $Left + $Space + $x * ($Width + $Space), $Top + $Space + $y * ($Height + $Space), $Width, $Height)
 		$img.Dispose()
 
 		$index++;
+	}
+}
+
+if ($null -ne $ColTitles) {
+	$colFont = [System.Drawing.Font]::new($FontName, $FontSizes[0], [System.Drawing.FontStyle]::Regular)
+	$colBrush = [System.Drawing.SolidBrush]::new($FontColors[0])
+
+	for ($x = 0; $x -lt $Cols; $x++) {
+		$rec = [System.Drawing.RectangleF]::new($Left + $Space + $x * ($Width + $Space), 0, $Width, $Top)
+		$graphics.DrawString($ColTitles[$x], $colFont, $colBrush, $rec, $stringFormat)
+	}
+}
+
+if ($null -ne $RowTitles) {
+	$rowFont = [System.Drawing.Font]::new($FontName, $FontSizes[1], [System.Drawing.FontStyle]::Regular)
+	$rowBrush = [System.Drawing.SolidBrush]::new($FontColors[1])
+
+	for ($y = 0; $y -lt $rows; $y++) {
+		$rec = [System.Drawing.RectangleF]::new(0, $Top + $Space + $y * ($Height + $Space), $Left, $Height)
+		$graphics.DrawString($RowTitles[$y], $rowFont, $rowBrush, $rec, $stringFormat)
 	}
 }
 
