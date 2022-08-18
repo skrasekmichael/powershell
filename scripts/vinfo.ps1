@@ -1,29 +1,14 @@
 param(
 	[string]$Path,
-	[int]$Depth
+	[int]$Depth,
+	[switch]$Raw = $false
 )
+	
+Import-Module Utils
 
 $root = "."
 if ("" -ne $Path) {
 	$root = $Path;
-}
-
-function Format-Size {
-	param (
-		[double]$Size
-	)
-
-	$units = "B", "KiB", "MiB", "GiB", "TiB"
-	$tmp = $Size
-	$index = 0;
-	while (1) {
-		if ($tmp -lt 1024) {
-			break
-		}
-		$tmp /= 1024
-		$index++;
-	}
-	return ($tmp.ToString("#.##") + " " + $units[$index])
 }
 
 function Write-Info {
@@ -39,7 +24,7 @@ function Write-Info {
 		}
 	}
 	
-	$files = Get-ChildItem -Path $Path/* -File -Include *.avi, *.mp4, *.mkv
+	$files = Get-ChildItem -Path $Path/* -File -Include *.avi, *.mp4, *.mkv, *.wmv
 	foreach ($file in $files) {
 		$json = ffprobe -v quiet -print_format json -show_format -show_streams $file | ConvertFrom-Json
 		$index = Get-Video-Stream -Json $json
@@ -93,4 +78,8 @@ function Get-Counts {
 	}
 }
 
-Write-Info -Path $root -CurrentDepth 0 | Format-Table File, @{Expression={$_.Size}; Label="Size      "}, Resolution, Codec, Duration, Auds, Subs, Details
+if ($Raw) {
+	Write-Info -Path $root -CurrentDepth 0
+} else {
+	Write-Info -Path $root -CurrentDepth 0 | Format-Table File, @{Expression={$_.Size}; Label="Size      "}, Resolution, Codec, Duration, Auds, Subs, Details
+}
