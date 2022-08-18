@@ -100,24 +100,24 @@ function prompt {
 
 	#username@address
 	$address = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Wi-Fi).IPAddress
-	$sb.Append("`e[92m$env:USERNAME@$address")
+	$sb.Append("`e[92m$env:USERNAME@$address") | Out-Null
 
 	#directory
-	$sb.Append("`e[39m $PWD ")
+	$sb.Append("`e[39m $PWD ") | Out-Null
 
 	#git branch
-	Write-BranchName -StringBuilder $sb
+	Write-BranchName -StringBuilder $sb | Out-Null
 	
 	#powershell version
 	$ver = $PSVersionTable.PSVersion
-	$sb.Append("`e[96m$($ver.Major).$($ver.Minor)")
+	$sb.Append("`e[96m$($ver.Major).$($ver.Minor)") | Out-Null
 
 	#admin rights
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 	if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-		$sb.Append("`e[91m#`e[39m")
+		$sb.Append("`e[91m#`e[39m") | Out-Null
 	} else {
-		$sb.Append("`e[39m>")
+		$sb.Append("`e[39m>") | Out-Null
 	}
 
 	return $sb.ToString()
