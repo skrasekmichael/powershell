@@ -1,12 +1,35 @@
-$path = $args[0];
-if ($null -eq $args[0]) {
-	$path = (Get-ChildItem -Path "." -Filter "*.sln" -Recurse | Select-Object -first 1).FullName
-} elseif ((Test-Path -Path $args[0] -PathType Container)) {
-	$path = (Get-ChildItem -Path $args[0] -Filter "*.sln" -Recurse | Select-Object -first 1).FullName
+$path = $args[0]
+$solutions = $null
+
+if ($null -eq $path) {
+	$solutions = (Get-ChildItem -Path "." -Filter "*.sln" -Recurse)
+} elseif ((Test-Path -Path $path -PathType Container)) {
+	$solutions = (Get-ChildItem -Path $path -Filter "*.sln" -Recurse)
 } else {
-	Write-Error "Cannot resolve $($args[0])"
+	Write-Error "Cannot resolve $path"
 	return
 }
 
-Write-Host "Opening $path ..."
-Invoke-Item $path
+if ($null -ne $solutions) {
+	if ($solutions.Count -gt 1) {
+		if ((Get-Host).Version.Major -gt 5) {
+			$index = menu @($solutions.Name) -ReturnIndex
+			[System.Console]::CursorTop
+
+			if ($null -eq $index) {
+				exit
+			}
+
+			$path = $solutions[$index].FullName
+		} else {
+			$path = $solutions[0].FullName
+		}
+	} else {
+		$path = $solutions.FullName
+	}
+}
+
+if ($null -ne $Path) {
+	Write-Host "Opening $path ..."
+	Invoke-Item $path
+}

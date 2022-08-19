@@ -11,6 +11,7 @@ if ((Get-Host).Version.Major -gt 5) {
 	Set-PSReadLineOption -EditMode Windows
 
 	Set-Alias -Name ren -Value Rename-Item
+	Set-Alias -Name wget -Value Invoke-WebRequest
 }
 
 Set-Alias -Name zip -Value Compress-Archive
