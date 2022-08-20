@@ -20,6 +20,8 @@ Set-Alias -Name new -Value New-Terminal
 Set-Alias -Name refresh -Value Invoke-RefreshEnviromentVariables
 Set-Alias -Name mklink -Value New-Symlink
 
+$esc = [char]27
+
 Set-PSReadLineKeyHandler -Key Alt+e `
 	-BriefDescription CWD `
 	-LongDescription "Open the current working directory in the Windows Explorer" `
@@ -51,9 +53,9 @@ function Write-BranchName {
 	if ($LASTEXITCODE -eq 0) {
 		if ($branch -eq "HEAD") {
 			$branch = git rev-parse --short HEAD
-			$StringBuilder.Append("`e[91m($branch) ")
+			$StringBuilder.Append("$esc[91m($branch) ")
 		} else {
-			$StringBuilder.Append("`e[94m($branch) ")
+			$StringBuilder.Append("$esc[94m($branch) ")
 		}
 	}
 }
@@ -101,24 +103,24 @@ function prompt {
 
 	#username@address
 	$address = (Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias Wi-Fi).IPAddress
-	$sb.Append("`e[92m$env:USERNAME@$address") | Out-Null
+	$sb.Append("$esc[92m$env:USERNAME@$address") | Out-Null
 
 	#directory
-	$sb.Append("`e[39m $PWD ") | Out-Null
+	$sb.Append("$esc[39m $PWD ") | Out-Null
 
 	#git branch
 	Write-BranchName -StringBuilder $sb | Out-Null
 	
 	#powershell version
 	$ver = $PSVersionTable.PSVersion
-	$sb.Append("`e[96m$($ver.Major).$($ver.Minor)") | Out-Null
+	$sb.Append("$esc[96m$($ver.Major).$($ver.Minor)") | Out-Null
 
 	#admin rights
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 	if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-		$sb.Append("`e[91m#`e[39m") | Out-Null
+		$sb.Append("$esc[91m#`e[39m") | Out-Null
 	} else {
-		$sb.Append("`e[39m>") | Out-Null
+		$sb.Append("$esc[39m>") | Out-Null
 	}
 
 	return $sb.ToString()
