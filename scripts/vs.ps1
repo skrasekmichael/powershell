@@ -14,7 +14,6 @@ if ($null -ne $solutions) {
 	if ($solutions.Count -gt 1) {
 		if ((Get-Host).Version.Major -gt 5) {
 			$index = menu @($solutions.Name) -ReturnIndex
-			[System.Console]::CursorTop
 
 			if ($null -eq $index) {
 				exit
