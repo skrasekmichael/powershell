@@ -6,9 +6,9 @@ param(
 	
 Import-Module Utils
 
-$root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".")
+$root = Resolve-Path "."
 if ("" -ne $Path) {
-	$root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+	$root = Resolve-Path $Path
 }
 
 function Write-Info {

@@ -8,8 +8,8 @@ param (
 	$GS = $true
 )
 
-$path1 = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($I1)
-$path2 = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($I2)
+$path1 = Resolve-Path $I1
+$path2 = Resolve-Path $I2
 $output = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Out)
 
 $bmp1 = [System.Drawing.Image]::FromFile($path1)

@@ -11,7 +11,7 @@ param (
 	[int]$H = -1
 )
 
-$inputPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($In)
+$inputPath = Resolve-Path $In
 $outputPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Out)
 
 $img = [System.Drawing.Image]::FromFile($inputPath)

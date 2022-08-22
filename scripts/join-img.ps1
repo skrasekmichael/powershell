@@ -19,7 +19,7 @@ param(
 
 $filePaths = [System.Collections.ArrayList]::new()
 foreach ($file in $Files) {
-	$path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($file)
+	$path = Resolve-Path $file
 	if (Test-Path $path -PathType Leaf) {
 		$filePaths.Add($path) | Out-Null
 	}
