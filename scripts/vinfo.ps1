@@ -18,13 +18,13 @@ function Write-Info {
 	)
 
 	if (($CurrentDepth -lt $Depth) -or ($Depth -eq -1)) {
-		$folders = Get-ChildItem $Path -Directory
+		$folders = Get-ChildItem -LiteralPath $Path -Directory
 		foreach ($folder in $folders) {
-			Write-Info -Path ($folder.FullName) -CurrentDepth ($CurrentDepth + 1)
+			Write-Info -Path $folder.FullName -CurrentDepth ($CurrentDepth + 1)
 		}
 	}
 	
-	$files = Get-ChildItem -Path $Path/* -File -Include *.avi, *.mp4, *.mkv, *.wmv
+	$files = Get-ChildItem -LiteralPath $Path -File -Include *.avi, *.mp4, *.mkv, *.wmv
 	foreach ($file in $files) {
 		$json = ffprobe -v quiet -print_format json -show_format -show_streams $file.FullName | ConvertFrom-Json
 		$index = Get-VideoStreamIndex -Json $json

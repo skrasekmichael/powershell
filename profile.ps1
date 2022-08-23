@@ -14,11 +14,13 @@ if ((Get-Host).Version.Major -gt 5) {
 	Set-Alias -Name wget -Value Invoke-WebRequest
 }
 
+Set-Alias -Name nano -Value "D:\Software\Git\usr\bin\nano.exe"
 Set-Alias -Name zip -Value Compress-Archive
 Set-Alias -Name unzip -Value Expand-Archive
 Set-Alias -Name new -Value New-Terminal
 Set-Alias -Name refresh -Value Invoke-RefreshEnviromentVariables
 Set-Alias -Name mklink -Value New-Symlink
+Set-Alias -Name all -Value Get-AllItems
 
 $esc = [char]27
 
@@ -98,6 +100,10 @@ function Get-LastError {
 	$Error[0].Exception | Format-List * -Force
 }
 
+function Get-AllItems($params) {
+	Get-ChildItem -Force $params
+}
+
 function prompt {
 	$sb = [System.Text.StringBuilder]::new(300)
 
@@ -118,7 +124,7 @@ function prompt {
 	#admin rights
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 	if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-		$sb.Append("$esc[91m#`e[39m") | Out-Null
+		$sb.Append("$esc[91m#$esc[39m") | Out-Null
 	} else {
 		$sb.Append("$esc[39m>") | Out-Null
 	}
