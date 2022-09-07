@@ -13,7 +13,7 @@ function Format-Size {
 
 	$pso = New-Object psobject -Property @{
 		Value = $Size
-		Formatted = ($tmp.ToString("#.##") + " " + $units[$index])
+		Formatted = ($tmp.ToString("0.##") + " " + $units[$index])
 	}
 
 	$pso | Add-Member scriptmethod ToString {
@@ -32,7 +32,7 @@ function Format-Double {
 
 	$pso = New-Object psobject -Property @{
 		Value = $Value
-		Formatted = ($Before + $Value.ToString("#.##") + $After)
+		Formatted = ($Before + $Value.ToString("0.##") + $After)
 	}
 
 	$pso | Add-Member scriptmethod ToString {
@@ -57,7 +57,7 @@ function Format-bps {
 
 	$pso = New-Object psobject -Property @{
 		Value = $Value
-		Formatted = ($tmp.ToString("#.##") + " " + $units[$index])
+		Formatted = ($tmp.ToString("0.##") + " " + $units[$index])
 	}
 
 	$pso | Add-Member scriptmethod ToString {
