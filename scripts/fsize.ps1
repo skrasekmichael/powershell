@@ -1,12 +1,27 @@
 param (
-	[string]$Path = "."
+	[string]$Path = ".",
+	[switch]$Root = $false
 )
 
 Import-Module Utils
 
-if (Test-Path $Path -PathType Container) {
-	$Measure = Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum
-	return Format-Size -Size $Measure.Sum
+$Path = Resolve-Path $Path -ErrorAction Stop
+
+if ($Root) {
+	Get-ChildItem -Path $Path -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $null -eq $_.LinkTarget } | ForEach-Object {
+		$size = 0
+		Get-ChildItem -Path $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+			$size += $_.Length
+		}
+		New-Object psobject -Property @{
+			Path = [System.IO.Path]::GetRelativePath($Path, $_.FullName)
+			Size = (Format-Size -Size $size)
+		}
+	}
 } else {
-	Write-Error "Parameter [$Path] isn't path to directory."
+	$size = 0
+	Get-ChildItem -Path $Path -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+		$size += $_.Length
+	}
+	return Format-Size -Size $size
 }
