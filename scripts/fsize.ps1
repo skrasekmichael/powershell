@@ -8,9 +8,9 @@ Import-Module Utils
 $Path = Resolve-Path $Path -ErrorAction Stop
 
 if ($Root) {
-	Get-ChildItem -Path $Path -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $null -eq $_.LinkTarget } | ForEach-Object {
+	Get-ChildItem -LiteralPath $Path -Directory -Force -ErrorAction SilentlyContinue | Where-Object { $null -eq $_.LinkTarget } | ForEach-Object {
 		$size = 0
-		Get-ChildItem -Path $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+		Get-ChildItem -LiteralPath $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
 			$size += $_.Length
 		}
 		New-Object psobject -Property @{
@@ -20,7 +20,7 @@ if ($Root) {
 	}
 } else {
 	$size = 0
-	Get-ChildItem -Path $Path -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+	Get-ChildItem -LiteralPath $Path -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
 		$size += $_.Length
 	}
 	return Format-Size -Size $size
