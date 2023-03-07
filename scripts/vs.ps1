@@ -1,12 +1,14 @@
-$path = $args[0]
+param(
+	[string]$Path = ".",
+	[int]$Depth = 3
+)
+
 $solutions = $null
 
-if ($null -eq $path) {
-	$solutions = (Get-ChildItem -Path "." -Filter "*.sln" -Recurse)
-} elseif ((Test-Path -Path $path -PathType Container)) {
-	$solutions = (Get-ChildItem -Path $path -Filter "*.sln" -Recurse)
+if ((Test-Path -Path $Path -PathType Container)) {
+	$solutions = (Get-ChildItem -Path $Path -Filter "*.sln" -Recurse -Depth $Depth)
 } else {
-	Write-Error "Cannot resolve $path"
+	Write-Error "Cannot resolve $Path"
 	return
 }
 
@@ -19,16 +21,16 @@ if ($null -ne $solutions) {
 				exit
 			}
 
-			$path = $solutions[$index].FullName
+			$Path = $solutions[$index].FullName
 		} else {
-			$path = $solutions[0].FullName
+			$Path = $solutions[0].FullName
 		}
 	} else {
-		$path = $solutions.FullName
+		$Path = $solutions.FullName
 	}
 }
 
 if ($null -ne $Path) {
-	Write-Host "Opening $path ..."
-	Invoke-Item $path
+	Write-Host "Opening $Path ..."
+	Invoke-Item $Path
 }

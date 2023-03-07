@@ -15,7 +15,7 @@ switch ($args[0]) {
 		Set-Location "D:\data"
 	}
 	"fit" {
-		Set-Location "D:\data\fit"
+		Set-Location "D:\data\fit\MITAI"
 	}
 	default {
 		Write-Error "Unexisting shortcut"

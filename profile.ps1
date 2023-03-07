@@ -14,6 +14,9 @@ if ((Get-Host).Version.Major -gt 5) {
 	Set-Alias -Name wget -Value Invoke-WebRequest
 }
 
+Import-Module "D:\Software\vcpkg\scripts\posh-vcpkg"
+
+Set-Alias -Name vcpkg -Value "D:\Software\vcpkg\vcpkg.exe"
 Set-Alias -Name nano -Value "D:\Software\Git\usr\bin\nano.exe"
 Set-Alias -Name zip -Value Compress-Archive
 Set-Alias -Name unzip -Value Expand-Archive
@@ -51,10 +54,12 @@ function Write-BranchName {
 		[System.Text.StringBuilder]$StringBuilder
 	)
 
-	$branch = git rev-parse --abbrev-ref HEAD 2>$null
+	#$branch = git rev-parse --abbrev-ref HEAD 2>$null
+	$branch = git symbolic-ref HEAD 2>$null
 	if ($LASTEXITCODE -eq 0) {
+		$branch = $branch.Substring($branch.LastIndexOf('/') + 1);
 		if ($branch -eq "HEAD") {
-			$branch = git rev-parse --short HEAD
+			#$branch = git rev-parse --short HEAD
 			$StringBuilder.Append("$esc[91m($branch) ")
 		} else {
 			$StringBuilder.Append("$esc[94m($branch) ")
@@ -131,5 +136,3 @@ function prompt {
 
 	return $sb.ToString()
 }
-
-Invoke-RefreshEnviromentPath
