@@ -3,6 +3,8 @@ param(
 	[int]$Depth = 3
 )
 
+Import-Module Menu
+	
 $solutions = $null
 
 if ((Test-Path -Path $Path -PathType Container)) {
@@ -15,7 +17,7 @@ if ((Test-Path -Path $Path -PathType Container)) {
 if ($null -ne $solutions) {
 	if ($solutions.Count -gt 1) {
 		if ((Get-Host).Version.Major -gt 5) {
-			$index = menu @($solutions.Name) -ReturnIndex
+			$index = Menu -Items @($solutions.Name) -ReturnIndex
 
 			if ($null -eq $index) {
 				exit
