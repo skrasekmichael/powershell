@@ -2,30 +2,32 @@ $workspace = ".workspace"
 $autorun = "$workspace/autorun.ps1"
 $workspaceFile = "$env:USERPROFILE/.workspace-list"
 
-$workspaceList = New-Object Collections.Generic.List[string]
-$names = New-Object Collections.Generic.List[string]
-$dirs = New-Object Collections.Generic.List[string]
+$workspaceList = New-Object Collections.Generic.List[psobject]
+
+function Read-WorskapceList {
+	$data = Import-Csv $workspaceFile -Header "Name", "Location", "Timestamp" -Delimiter ";"
+	return $data | Sort-Object -Property { [System.DateTime]::ParseExact($_.Timestamp, "dd.MM.yyyy HH:mm:ss", [System.Globalization.CultureInfo]::InvariantCulture) } -Descending
+}
+
+function Save-WorkspaceList {
+	$workspaceList | Export-Csv -Path $workspaceFile -Delimiter ";" -NoHeader
+}
 
 if (Test-Path -Path $workspaceFile) {
-	$content = Get-Content $workspaceFile -Raw
-	$enumerator = (ConvertFrom-StringData -StringData $content).GetEnumerator()
-	while ($null -ne $enumerator -and $enumerator.MoveNext()) {
-		$var = $enumerator.Current
-		$names.Add($var.Name) | Out-Null
-		$dirs.Add($var.Value) | Out-Null
-		$workspaceList.Add("$($var.Name)=$($var.Value)") | Out-Null
-	}
+	$workspaceList = [Collections.Generic.List[psobject]](Read-WorskapceList)
 } else {
 	Write-Host >$workspaceFile
 }
 
-
 if ("" -eq $args -or $args[0] -eq "select") {
-	$index = Menu -Items @($names) -ReturnIndex
+	$index = Menu -Items @($workspaceList.Name) -ReturnIndex
 	if ($null -ne $index) {
-		echo $dirs[$index]
-		Set-Location $dirs[$index]
-		$host.UI.RawUI.WindowTitle = $names[$index]
+		$workspaceList[$index].Timestamp = (Get-Date).ToString("dd.MM.yyyy HH:mm:ss")
+		Save-WorkspaceList
+
+		Write-Host $workspaceList[$index].Location
+		Set-Location $workspaceList[$index].Location
+		$host.UI.RawUI.WindowTitle = $workspaceList[$index].Name
 
 		if (Test-Path $autorun ) {
 			&$autorun
@@ -43,9 +45,14 @@ if ("" -eq $args -or $args[0] -eq "select") {
 
 	Write-Host "Creating workspace for $pwd ..."
 	$path = $pwd.Path.Replace("\", "/")
-	$workspaceList.Add("$name=$path") | Out-Null
-	$workspaceList | Out-File $workspaceFile
-	
+
+	$workspaceList.Add([PSCustomObject]@{ 
+		Name = $name;
+		Location = $path;
+		Timestamp = (Get-Date).ToString("dd.MM.yyyy HH:mm:ss")
+	}) | Out-Null
+	Save-WorkspaceList
+
 	$choices = "&Yes", "&No"
 	$decision = $Host.UI.PromptForChoice("Create autorun script?", "Do you want to create script, which will automatically run after workspace switch?", $choices, 1)
 	if ($decision -eq 0) {
@@ -60,13 +67,13 @@ if ("" -eq $args -or $args[0] -eq "select") {
 		Invoke-Item	$autorun
 	}
 } elseif ($args[0] -eq "remove") {
-	$index = Menu -Items @($names) -ReturnIndex
+	$index = Menu -Items @($workspaceList.Name) -ReturnIndex
 	if ($index -ne -1) {
 		$choices = "&Yes", "&No"
-		$decision = $Host.UI.PromptForChoice("Remove workspace?", "Do you want to remove workspace [$($names[$index])]?", $choices, 1)
+		$decision = $Host.UI.PromptForChoice("Remove workspace?", "Do you want to remove workspace [$($workspaceList[$index].Name)]?", $choices, 1)
 		if ($decision -eq 0) {
-			$workspaceList.RemoveAt($index) | Out-Null
-			$workspaceList | Out-File $workspaceFile
+			$workspaceList.RemoveAt($index)
+			Save-WorkspaceList
 		}
 	}
 } elseif ($args[0] -eq "edit") {
