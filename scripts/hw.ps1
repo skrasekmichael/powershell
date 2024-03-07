@@ -60,11 +60,11 @@ foreach ($cpu in $cpus) {
 #ram
 $rams = Get-CimInstance -ClassName Win32_PhysicalMemory
 "RAM: "
-"- Capacity: {0:N2}" -f (($rams.Capacity | Measure-Object -Sum).Sum / 1GB) + " GiB"
-"- Total Physical Memory: {0:N2}" -f ($system.TotalPhysicalMemory / 1GB) + " GiB"
+"- Capacity: {0:N2} GiB" -f (($rams.Capacity | Measure-Object -Sum).Sum / 1GB)
+"- Total Physical Memory: {0:N2} GiB" -f ($system.TotalPhysicalMemory / 1GB)
 "- Memory modelus: "
 foreach ($ram in $rams) {
-	"  - $((Get-RAMType -Type $ram.SMBIOSMemoryType)) [$($ram.BankLabel)/$($ram.DeviceLocator)] (" + "{0:N2}" -f ($ram.Capacity / 1GB) + " GiB)"
+	"  - $((Get-RAMType -Type $ram.SMBIOSMemoryType)) [$($ram.BankLabel)/$($ram.DeviceLocator)] ({0:N2} GiB)" -f ($ram.Capacity / 1GB)
 }
 
 #gpu
@@ -81,7 +81,7 @@ $disks = Get-Disk
 foreach ($disk in $disks) {
 	Write-Host "- " -NoNewline
 	Write-Host $disk.FriendlyName -ForegroundColor DarkCyan -NoNewline
-	" (" + "{0:N2}" -f ($disk.Size / 1GB) + " GiB)"
+	" ({0:N2} GiB)" -f ($disk.Size / 1GB) 
 }
 
 #volumes
@@ -93,6 +93,6 @@ foreach ($vol in $volumes) {
 		"    - DriveLetter: $($vol.DriveLetter)"
 	}
 
-	"    - Capacity: " + "{0:N2}" -f ($vol.Size / 1GB) + " GiB"
-	"    - Free Space: " + "{0:P2}" -f ($vol.SizeRemaining / $vol.Size) + " (" + "{0:N2}" -f ($vol.SizeRemaining / 1GB) + " GiB)"
+	"    - Capacity: {0:N2} GiB" -f ($vol.Size / 1GB)
+	"    - Free Space: {0:P2} ({1:N2} GiB)" -f ($vol.SizeRemaining / $vol.Size), ($vol.SizeRemaining / 1GB)
 }
