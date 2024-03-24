@@ -34,27 +34,32 @@ if ("" -eq $args -or $args[0] -eq "select") {
 		}
 	}
 } elseif ($args[0] -eq "create") {
+	$path = $pwd.Path.Replace("\", "/")
+	if ($workspaceList | Where-Object { $_.Location -eq $path }) {
+		Write-Error "Workspace for [$path] already exists."
+		return
+	}
+
 	while ($true) {
 		$name = Read-Host "Enter workspace name"
-		if ($names.Contains($name)) {
-			Write-Host "Name [$name] already exist."
+		if ($workspaceList | Where-Object { $_.Name -eq $name }) {
+			Write-Host "Workspace with name [$name] already exists."
 		} else {
 			break
 		}
 	}
 
-	Write-Host "Creating workspace for $pwd ..."
-	$path = $pwd.Path.Replace("\", "/")
-
+	Write-Host "Creating workspace for $pwd ..." -NoNewline
 	$workspaceList.Add([PSCustomObject]@{ 
 		Name = $name;
 		Location = $path;
 		Timestamp = (Get-Date).ToString("dd.MM.yyyy HH:mm:ss")
 	}) | Out-Null
 	Save-WorkspaceList
+	Write-Host "DONE"
 
 	$choices = "&Yes", "&No"
-	$decision = $Host.UI.PromptForChoice("Create autorun script?", "Do you want to create script, which will automatically run after workspace switch?", $choices, 1)
+	$decision = $Host.UI.PromptForChoice("Create autorun script?", "Do you want to create a powershell script, which will automatically run after a workspace switch?", $choices, 1)
 	if ($decision -eq 0) {
 		if (-not (Test-Path $workspace)) {
 			mkdir $workspace
