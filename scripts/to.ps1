@@ -1,4 +1,10 @@
-switch ($args[0]) {
+param (
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = "Shortcut")]
+	[ValidateSet("d", "prog", "dw", "data", "fit", IgnoreCase = $true)]
+	[string]$Shortcut
+)
+
+switch ($Shortcut) {
 	"" {
 		Write-Host "prog|dw|d|data|fit"
 	}
