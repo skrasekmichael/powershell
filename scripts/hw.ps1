@@ -29,7 +29,7 @@ function Get-RAMType {
 		24 { return "DDR3" }
 		25 { return "FBD2" }
 		26 { return "DDR4" }
-		default { return "" }
+		default { return "Unknown by Script" }
 	}
 }
 
@@ -64,7 +64,7 @@ $rams = Get-CimInstance -ClassName Win32_PhysicalMemory
 "- Total Physical Memory: {0:N2} GiB" -f ($system.TotalPhysicalMemory / 1GB)
 "- Memory modelus: "
 foreach ($ram in $rams) {
-	"  - $((Get-RAMType -Type $ram.SMBIOSMemoryType)) [$($ram.BankLabel)/$($ram.DeviceLocator)] ({0:N2} GiB)" -f ($ram.Capacity / 1GB)
+	"  - $((Get-RAMType -Type $ram.SMBIOSMemoryType)) [$($ram.BankLabel)/$($ram.DeviceLocator)] ({0:N2} GiB) ($($ram.Speed) Hz)" -f ($ram.Capacity / 1GB)
 }
 
 #gpu
