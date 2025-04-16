@@ -1,11 +1,11 @@
 function DrawMenu {
-    param (
-		[array]$Items, 
+	param (
+		[array]$Items,
 		[int]$Position
 	)
-		
-    $count = $Items.length
-    for ($i = 0; $i -le $count; $i++) {
+
+	$count = $Items.length
+	for ($i = 0; $i -le $count; $i++) {
 		if ($null -ne $Items[$i]) {
 			$item = $Items[$i]
 			if ($i -eq $Position) {
@@ -14,34 +14,47 @@ function DrawMenu {
 				Write-Host "  $($item)"
 			}
 		}
-    }
+	}
 }
 
 function Menu {
-    param (
-		[array]$Items, 
+	param (
+		[array]$Items,
 		[switch]$ReturnIndex = $false
 	)
 
-    $vkeycode = 0
-    $pos = 0
-    if ($Items.Length -gt 0)
+	$EnterKey = 13
+	$EscKey = 27
+	$HomeKey = 36
+	$EndKey = 35
+	$UpKey = 38
+	$DownKey = 40
+
+	$keyCode = 0
+	$pos = 0
+	if ($Items.Length -gt 0)
 	{
 		try {
 			[System.Console]::CursorVisible = $false
 			DrawMenu $Items $pos
-			While ($vkeycode -ne 13 -and $vkeycode -ne 27) {
-				$press = $host.ui.rawui.readkey("NoEcho,IncludeKeyDown")
-				$vkeycode = $press.virtualkeycode
-				if ($vkeycode -eq 38) { $pos-- }
-				if ($vkeycode -eq 40) { $pos++ }
-				if ($vkeycode -eq 36) { $pos = 0 }
-				if ($vkeycode -eq 35) { $pos = $Items.Length - 1 }
-				if ($press.Character -eq ' ') { $selection = Toggle-Selection $pos $selection }
-				if ($pos -lt 0) { $pos = 0 }
-				if ($vkeycode -eq 27) { $pos = $null }
-				if ($pos -ge $Items.Length) { $pos = $Items.Length - 1 }
-				if ($vkeycode -ne 27) {
+			While ($keyCode -ne $EnterKey -and $keyCode -ne $EscKey) {
+				$press = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+				$keyCode = $press.VirtualKeyCode
+
+				if ($keyCode -eq $UpKey) { $pos-- }
+				if ($keyCode -eq $DownKey) { $pos++ }
+				if ($keyCode -eq $HomeKey) { $pos = 0 }
+				if ($keyCode -eq $EndKey) { $pos = $Items.Length - 1 }
+
+				if ($pos -lt 0) {
+					$pos = 0
+				} elseif ($pos -ge $Items.Length) {
+					$pos = $Items.Length - 1
+				}
+
+				if ($keyCode -eq $EscKey) {
+					$pos = $null
+				} else {
 					$startPos = [System.Console]::CursorTop - $Items.Length
 					[System.Console]::SetCursorPosition(0, $startPos)
 					DrawMenu $Items $pos
@@ -55,7 +68,7 @@ function Menu {
 		$pos = $null
 	}
 
-    if ($ReturnIndex -eq $false -and $null -ne $pos) {
+	if ($ReturnIndex -eq $false -and $null -ne $pos) {
 		return $Items[$pos]
 	} else {
 		return $pos
