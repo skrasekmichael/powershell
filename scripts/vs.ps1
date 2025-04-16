@@ -8,13 +8,15 @@ Import-Module Menu
 $solutions = $null
 
 if ((Test-Path -Path $Path -PathType Container)) {
-	$solutions = (Get-ChildItem -Path $Path -Filter "*.sln" -Recurse -Depth $Depth)
+	$solutions = (Get-ChildItem -Path $Path -Include "*.sln", "*.slnx" -Recurse -Depth $Depth)
 } else {
 	Write-Error "Cannot resolve $Path"
 	return
 }
 
-if ($null -ne $solutions) {
+$solutionPath = $null;
+
+if ($null -ne $solutions && $solutions.Count -gt 0) {
 	if ($solutions.Count -gt 1) {
 		if ((Get-Host).Version.Major -gt 5) {
 			$index = Menu -Items @($solutions.Name) -ReturnIndex
@@ -23,16 +25,18 @@ if ($null -ne $solutions) {
 				exit
 			}
 
-			$Path = $solutions[$index].FullName
+			$solutionPath = $solutions[$index].FullName
 		} else {
-			$Path = $solutions[0].FullName
+			$solutionPath = $solutions[0].FullName
 		}
 	} else {
-		$Path = $solutions.FullName
+		$solutionPath = $solutions.FullName
 	}
 }
 
-if ($null -ne $Path) {
-	Write-Host "Opening $Path ..."
-	Invoke-Item $Path
+if ($null -ne $solutionPath) {
+	Write-Host "Opening $solutionPath ..."
+	Invoke-Item $solutionPath
+} else {
+	Write-Host "No solution file have been found."
 }
