@@ -10,6 +10,7 @@ while ($true)
 	$processes = Get-Process | Where-Object { $_.ProcessName -eq $ProcessName }
 	foreach ($process in $processes)
 	{
+		Write-Host (Get-Date).ToString("dd.MM.yyyy HH:mm:ss")
 		taskkill.exe -f -pid $process.Id
 	}
 
